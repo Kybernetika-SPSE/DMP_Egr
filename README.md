@@ -8,4 +8,4 @@
 
 [MP_3D_Models](./MP_modely)
 
-[Schéamta](./Reports/Report_october/schematics)
+[Schémata](./Reports/Report_october/schematics)
