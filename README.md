@@ -1,10 +1,16 @@
 # DMP_Egr
 
-[Reports](./Reports)
-[MP_3D_Models](./MP_modely)
-[Schematics](./Reports/Report_october/schematics)
-[Code](./Code/main.ino)
+### Materials
++ [Reports](./Reports)
 
-[January report](./Reports/December_report/January_report.pdf)
++ [MP_3D_Models](./MP_modely)
+
++ [Schematics](./Reports/Report_october/schematics)
+
++ [Code](./Code/main.ino)
+
+### Latest report
+
++ [January report](./Reports/December_report/January_report.pdf)
 
 
