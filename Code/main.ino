@@ -45,7 +45,7 @@ void loop() {
   // Kontrola prvního IR senzoru
   if (digitalRead(IR1) == HIGH) {
     stopMotor();
-    delay(500); // Čas na ustálení
+    delay(500);
 
     // Detekce barvy
     detectedColor = scanColor();
@@ -53,17 +53,16 @@ void loop() {
 
     // Pokračování pásu
     startMotor();
-    delay(2000); // Simulace posunu k druhému senzoru
+    delay(2000); 
   }
 
   // Kontrola druhého IR senzoru
   if (digitalRead(IR2) == HIGH) {
     stopMotor();
-    delay(500); // Čas na ustálení
-
+    delay(500);
     // Simulace ovládání ramene
     Serial.println("Object picked up by robotic arm");
-    delay(2000); // Čas na přemístění objektu
+    delay(2000); 
 
     // Pokračování pásu
     startMotor();
@@ -72,11 +71,11 @@ void loop() {
 
 // Funkce pro spuštění motoru
 void startMotor() {
-    Serial.println("Motor start");
+  Serial.println("Motor start");
   digitalWrite(dirPin, HIGH); // Směr pohybu
   for (int x = 0; x < stepsPerRevolution; x++) {
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(1000); // Nastavení rychlosti
+    delayMicroseconds(1000);
     digitalWrite(stepPin, LOW);
     delayMicroseconds(1000);
   }
@@ -84,7 +83,6 @@ void startMotor() {
 
 // Funkce pro zastavení motoru
 void stopMotor() {
-  // Motor přestane generovat kroky, tím se pás zastaví
   Serial.println("Motor stop");
 }
 
@@ -94,21 +92,33 @@ String scanColor() {
   digitalWrite(S2, LOW);
   digitalWrite(S3, LOW);
   int red = pulseIn(Out, LOW);
+  delay(50);
 
   digitalWrite(S2, HIGH);
   digitalWrite(S3, HIGH);
-  int green = pulseIn(Out, LOW);
+  int green = pulseIn(Out, LOW);¨
+  delay(50);
 
   digitalWrite(S2, LOW);
   digitalWrite(S3, HIGH);
   int blue = pulseIn(Out, LOW);
+  delay(50);
+
+  Serial.print("R: ");
+  Serial.print(red);
+  Serial.print(" | G: ");
+  Serial.print(green);
+  Serial.print(" | B: ");
+  Serial.print(blue);
 
   if (red < green && red < blue) {
     Serial.println("Barva červená");
     return "Red";
+
   } else if (green < red && green < blue) {
     Serial.println("Barva zelená");
     return "Green";
+
   } else {
     Serial.println("Barva modrá");
     return "Blue";
