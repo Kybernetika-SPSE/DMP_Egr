@@ -11,6 +11,6 @@
 
 ### Latest report
 
-+ [January report](./Reports/December_report/January_report.pdf)
++ [January report](./Reports/January_report/January_report.pdf)
 
 
