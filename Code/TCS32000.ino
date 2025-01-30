@@ -25,6 +25,7 @@ void loop() {
   // nastavení měření červené barvy
   digitalWrite(pinS2,LOW);
   digitalWrite(pinS3,LOW);
+  
   delay(50);
 
   frekvenceCervena = pulseIn(pinOut, LOW);
@@ -59,6 +60,5 @@ void loop() {
 
   // ukončení řádku
   Serial.println();
-  // volitelná pauza pro přehledné čtení výsledků
-  delay(850);
+  delay(1000);
 }

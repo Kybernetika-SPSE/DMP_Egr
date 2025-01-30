@@ -60,8 +60,8 @@ void loop() {
   if (digitalRead(IR2) == HIGH) {
     stopMotor();
     delay(500);
-    // Simulace ovládání ramene
-    Serial.println("Object picked up by robotic arm");
+    // Rameno (doplnit!)
+    Serial.println("Rameno");
     delay(2000); 
 
     // Pokračování pásu
