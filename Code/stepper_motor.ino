@@ -1,18 +1,22 @@
-#define dirPin = 51;
-#define stepPin = 53;
-const int stepsPerRevolution = 3200; 
+#define dirPin 50
+#define stepPin 52
+#define enablePin 48  // Pin pro povolení/vypnutí driveru
+const int stepsPerRevolution = 3200;
 
 void setup()
 {
     pinMode(stepPin, OUTPUT);
     pinMode(dirPin, OUTPUT);
+    pinMode(enablePin, OUTPUT);
+
+    digitalWrite(enablePin, LOW); // Aktivace driveru
 }
 
 void loop()
 {
-    // Nastavení směru otočení (high = po směru, LOW = proti směru)
-    digitalWrite(dirPin, HIGH);
+    digitalWrite(dirPin, LOW); // Nastavení směru
 
+    // Provedení otočení
     for (int x = 0; x < stepsPerRevolution; x++)
     {
         digitalWrite(stepPin, HIGH);
@@ -21,5 +25,11 @@ void loop()
         delayMicroseconds(1000);
     }
 
-    delay(1000);
+
+
+    digitalWrite(enablePin, HIGH); // Vypnutí motoru (uspání)
+    
+    delay(2000); // Počkáme před dalším pohybem
+
+    digitalWrite(enablePin, LOW); // Opět aktivujeme motor před dalším pohybem
 }

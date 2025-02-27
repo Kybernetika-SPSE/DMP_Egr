@@ -1,5 +1,4 @@
-#define irSensorPin = 52;  
-
+#define irSensorPin 36  // Nebo alternativně: const int irSensorPin = 38, 36
 
 void setup() {
   pinMode(irSensorPin, INPUT);
@@ -11,7 +10,6 @@ void loop() {
 
   if (sensorValue == LOW) {
     // Obstacle detected
-
     Serial.println("Obstacle detected!");
   } else {
     // No obstacle
