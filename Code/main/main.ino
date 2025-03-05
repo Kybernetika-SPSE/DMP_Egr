@@ -96,6 +96,8 @@ void loop() {
       cubeGreen(); // Pozice se zelenou
     } else if (detectedColor == "B") {
       cubeBlue(); // Pozice s modrou
+    } else if (detectedColour == "XXX") {
+      cubeUknown();
     }
     
     armReset(); // Base poloha pro rameno
@@ -124,7 +126,8 @@ void stopMotor() {
 
 // Funkce pro detekci barvy
 String scanColor() {
-  while (true) { // Opakuj měření, dokud nenajdeme platnou barvu
+  int attempts = 0;
+  while (attempts < 5) { // Opakuj měření maximálně 5x
     digitalWrite(S2, LOW);
     digitalWrite(S3, LOW);
     int red = pulseIn(Out, LOW);
@@ -164,9 +167,14 @@ String scanColor() {
     }
 
     Serial.println("Barva nerozpoznána, opakuji měření...");
+    attempts++;
     delay(500); // Počkej půl sekundy před novým měřením
   }
+  
+  Serial.println("Kostka nebyla rozpoznána");
+  return "XXX"; // Vrátí prázdný řetězec, pokud nebyla barva rozpoznána
 }
+
 
 
 void moveArm(int a, int b, int c, int d, int e, int f) {
@@ -195,6 +203,10 @@ void cubeBlue() {
   moveArm(185, 145, 115, 125, 95, 15); //Nadefinovat pozice
 }
 
+void cubeUknown() {
+  moveArm(125, 145, 115, 125, 95, 15);
+}
+
 void armReset() {
   moveArm(90, 90, 90, 90, 90, 90); //Nadefinovat pozice
 }
@@ -202,3 +214,5 @@ void armReset() {
 void armStup() {
   moveArm(90, 90, 90, 90, 90, 90); //Nadefinovat pozice
 }
+
+
