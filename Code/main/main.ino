@@ -188,7 +188,9 @@ void moveArm(int a, int b, int c, int d, int e, int f) {
 }
 
 void cubeGrab() {
-  moveArm(90, 120, 150, 90, 60, 45); //Nadefinovat pozice
+  moveArm(0, 120, 50, 90, 60, 45); //Nadefinovat pozice
+  moveArm(90, 120, 150, 48, 60, 45); //Nadefinovat pozice
+  moveArm(90, 0, 150, 90, 60, 45); //Nadefinovat pozice
 }
 
 void cubeRed() {
