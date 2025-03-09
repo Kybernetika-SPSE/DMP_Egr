@@ -7,7 +7,7 @@
 
 + [Schematics](./Reports/Report_october/schematics)
 
-+ [Code](./Code/main.ino)
++ [Code](./Code)
 
 ### Latest report
 
