@@ -243,7 +243,7 @@ void cubeBlue() {
 }
 
 void cubeUknown() {
-  moveArm(125, 145, 115, 125, 95, 15);
+  // vyhození motorem
 }
 
 void armReset() {
