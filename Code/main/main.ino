@@ -14,15 +14,10 @@
 // Definování NEMA 17 (pas)
 #define dirPin 50
 #define stepPin 52
-const int stepsPerRevolution = 3600;
+#define enablePin 48
 
 // Deklarace servomotorů pro rameno (1-6)
-Servo osa1;
-Servo osa2;
-Servo osa3;
-Servo osa4;
-Servo osa5;
-Servo osa6;
+Servo osa1, osa2, osa3, osa4, osa5, osa6;
 
 // Piny pro připojení servomotorů
 #define PIN_OSA1 2
@@ -45,7 +40,7 @@ void setup() {
   pinMode(S2, OUTPUT);
   pinMode(S3, OUTPUT);
   pinMode(Out, INPUT);
-  digitalWrite(S0, HIGH);
+  digitalWrite(S0, LOW);
   digitalWrite(S1, LOW);
 
   // IR senzory
@@ -55,6 +50,8 @@ void setup() {
   // Krokový motor
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
+   pinMode(enablePin, OUTPUT);
+  digitalWrite(enablePin, LOW); // Aktivace driveru
 
   // Servo inicializace
   osa1.attach(PIN_OSA1);
@@ -66,66 +63,71 @@ void setup() {
 
   armSetup(); //Uhel 90 všechny
   armReset(); // Uhel kdy bude rameno sedět 
+
+
 }
 
 void loop() {
-  startMotor();
+  startMotorUntilSensor(IR1);
 
-  if (digitalRead(IR1) == HIGH) {
-    delay(1000); // Nechá dojet kostku pod TCS (vyzkoušet a opravit)
-    stopMotor();
-    delay(500);
+  delay(1000); // Nechá dojet kostku pod TCS (vyzkoušet a opravit)
+  stopMotor();
 
-    detectedColor = scanColor();
-    Serial.println("Detecovaná barva: " + detectedColor);
+  delay(500);
 
-    startMotor();
+  detectedColor = scanColor();
+  Serial.println("Detecovaná barva: " + detectedColor);
+
+  startMotorUntilSensor(IR2);
+  delay(1000);
+  stopMotor();
+
+  Serial.println("Rameno aktivováno");
+  cubeGrab();
+
+  if (detectedColor == "R") {
+    cubeRed(); // Pozice s červenou
+  } else if (detectedColor == "G") {
+    cubeGreen(); // Pozice se zelenou
+  } else if (detectedColor == "B") {
+    cubeBlue(); // Pozice s modrou
+  } else if (detectedColour == "XXX") {
+    cubeUknown();
   }
-
-  if (digitalRead(IR2) == HIGH) {
-    delay(1000);
-    stopMotor();
-    delay(500);
-
-    Serial.println("Rameno aktivováno");
-    cubeGrab();
-
-    if (detectedColor == "R") {
-      cubeRed(); // Pozice s červenou
-    } else if (detectedColor == "G") {
-      cubeGreen(); // Pozice se zelenou
-    } else if (detectedColor == "B") {
-      cubeBlue(); // Pozice s modrou
-    } else if (detectedColour == "XXX") {
-      cubeUknown();
-    }
     
-    armReset(); // Base poloha pro rameno
-    delay(2000);
+  armReset(); // Reset ramena na základní pozici + vypnutí
+  delay(2000);
   }
 }
 
 // Funkce pro spuštění motoru
-void startMotor() {
+void startMotorUntilSensor() {
   Serial.println("Motor start");
-  digitalWrite(dirPin, HIGH); // Směr pohybu (high = po směru, LOW = proti směru)
-  for (int x = 0; x < stepsPerRevolution; x++) {
+  digitalWrite(enablePin, LOW);
+  digitalWrite(dirPin, HIGH); // Směr pohybu
+
+  while (digitalRead(IRsensor) == HIGH) {  // Motor běží, dokud není senzor aktivován
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(1000); // Nastavení rychlosti pohybu
+    delayMicroseconds(2000);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(1000); // Nastavení rychlosti pohybu
+    delayMicroseconds(2000);
   }
+
+  Serial.println("Senzor aktivován - zastavuji motor!");
 }
 
 // Funkce pro zastavení motoru
 void stopMotor() {
   Serial.println("Motor stop");
-  digitalWrite(stepPin, LOW); // LOW = neposíláme impulzy
-  digitalWrite(dirPin, LOW);  // Vypneme směr, což často zastaví driver
+  digitalWrite(enablePin, HIGH);
 }
 
 // Funkce pro detekci barvy
 String scanColor() {
+  digitalWrite(S0, HIGH); // Zapnutí senzoru
+  digitalWrite(S1, LOW);
+  delay(100);
+
   int attempts = 0;
   while (attempts < 5) { // Opakuj měření maximálně 5x
     digitalWrite(S2, LOW);
@@ -153,16 +155,19 @@ String scanColor() {
     // Rozhodování o barvě
     if (red < 60) {
       Serial.println("Barva červená");
+      digitalWrite(S0, LOW); // Vypnutí senzoru
       return "R";
 
     } else if (red >= 190 && red <= 220 &&
                green >= 140 && green <= 160 &&
                blue >= 150 && blue <= 170) {
       Serial.println("Barva zelená");
+      digitalWrite(S0, LOW); // Vypnutí senzoru
       return "G";
 
     } else if (blue > green && blue > red) { 
       Serial.println("Barva modrá");
+      digitalWrite(S0, LOW); // Vypnutí senzoru
       return "B";
     }
 
@@ -172,22 +177,54 @@ String scanColor() {
   }
   
   Serial.println("Kostka nebyla rozpoznána");
-  return "XXX"; // Vrátí prázdný řetězec, pokud nebyla barva rozpoznána
+  digitalWrite(S0, LOW); // Vypnutí senzoru
+  return "XXX"; // Barva rozpoznána
 }
 
 
 
-void moveArm(int a, int b, int c, int d, int e, int f) {
-  osa1.write(a);
-  osa2.write(b);
-  osa3.write(c);
-  osa4.write(d);
-  osa5.write(e);
-  osa6.write(f);
-  delay(200);
+void moveArm(int a, int b, int c, int d, int e, int f, int steps = 50) {
+  int startPos[6] = {osa1.read(), osa2.read(), osa3.read(), osa4.read(), osa5.read(), osa6.read()};
+  int endPos[6] = {a, b, c, d, e, f};
+  
+  float stepSize[6];
+  for (int i = 0; i < 6; i++) {
+    stepSize[i] = (endPos[i] - startPos[i]) / (float)steps;
+  }
+  
+  for (int s = 0; s <= steps; s++) {
+    osa1.write(startPos[0] + stepSize[0] * s);
+    osa2.write(startPos[1] + stepSize[1] * s);
+    osa3.write(startPos[2] + stepSize[2] * s);
+    osa4.write(startPos[3] + stepSize[3] * s);
+    osa5.write(startPos[4] + stepSize[4] * s);
+    osa6.write(startPos[5] + stepSize[5] * s);
+    delay(20);
+  }
+}
+
+void disableArm() {
+  osa1.detach();
+  osa2.detach();
+  osa3.detach();
+  osa4.detach();
+  osa5.detach();
+  osa6.detach();
+  Serial.println("Rameno vypnuto");
+}
+
+void enableArm() {
+  osa1.attach(PIN_OSA1);
+  osa2.attach(PIN_OSA2);
+  osa3.attach(PIN_OSA3);
+  osa4.attach(PIN_OSA4);
+  osa5.attach(PIN_OSA5);
+  osa6.attach(PIN_OSA6);
+  Serial.println("Rameno aktivováno");
 }
 
 void cubeGrab() {
+  enableArm();
   moveArm(0, 120, 50, 90, 60, 45); //Nadefinovat pozice
   moveArm(90, 120, 150, 48, 60, 45); //Nadefinovat pozice
   moveArm(90, 0, 150, 90, 60, 45); //Nadefinovat pozice
@@ -210,10 +247,13 @@ void cubeUknown() {
 }
 
 void armReset() {
+  enableArm();
   moveArm(90, 90, 90, 90, 90, 90); //Nadefinovat pozice
+  disableArm();
 }
 
-void armStup() {
+void armSetup() {
+  enableArm();
   moveArm(90, 90, 90, 90, 90, 90); //Nadefinovat pozice
 }
 

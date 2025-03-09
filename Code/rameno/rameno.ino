@@ -28,7 +28,7 @@ void loop() {
   delay(4000);
 }
 
-void moveArm(int a, int b, int c, int d, int e, int f, int steps = 100) {
+void moveArm(int a, int b, int c, int d, int e, int f, int steps = 50) {
   int startPos[6] = {osa1.read(), osa2.read(), osa3.read(), osa4.read(), osa5.read(), osa6.read()};
   int endPos[6] = {a, b, c, d, e, f};
   
