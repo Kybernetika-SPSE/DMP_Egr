@@ -8,7 +8,7 @@
 #define PIN_OSA6 7
 
 Servo osa1, osa2, osa3, osa4, osa5, osa6;
-int uhly[6] = {90, 90, 90, 90, 90, 90}; // Výchozí úhly
+int uhly[6] = {90, 90, 90, 90, 90, 60}; // Výchozí úhly
 
 void setup() {
   Serial.begin(9600);

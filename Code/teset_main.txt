@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Servo.h>
 
 // Definování pinů na TCS3200
@@ -33,8 +34,26 @@ Servo osa6;
 #define PIN_OSA5 6
 #define PIN_OSA6 7
 
+// RGB LED modul KY-016
+#define pinR 10 // bílý
+#define pinG 9 //šedivy
+#define pinB 8 // fialový
+const int maxSvit = 50;
+
+// semafor
+#define cervena_semafor 13 //bílá
+#define zluta_semafor 12 //šedivý
+#define zelena_semafor 11 //fialová
+int pauza = 1000; //nastavíme si jak dlouhou chceme pauzu
+
+//bzucak
+#define BUZZER_PIN 40
+
+
 // Nastavení globální proměnné pro barvu
 String detectedColor = "";
+
+String barva = "";
 
 // Funkce pro debouncing IR senzoru
 bool isSensorLowDebounced(int sensorPin, int debounceDelay = 10) {
@@ -54,6 +73,20 @@ bool isSensorLowDebounced(int sensorPin, int debounceDelay = 10) {
 
 
 void setup() {
+  // semafor
+  pinMode(cervena_semafor, OUTPUT);
+  pinMode(zluta_semafor, OUTPUT);
+  pinMode(zelena_semafor, OUTPUT);
+
+  //rgb modul
+  pinMode(pinR, OUTPUT);
+  pinMode(pinG, OUTPUT);
+  pinMode(pinB, OUTPUT);
+
+  //bzucak
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, HIGH); // Bzučák vypnutý po startu
+
   // Krokový motor
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
@@ -83,22 +116,40 @@ void setup() {
   osa4.attach(PIN_OSA4);
   osa5.attach(PIN_OSA5);
   osa6.attach(PIN_OSA6);
+  delay(2000);
+  enableArm();
+  delay(1000);
+  armReset();
 
-  //armSetup(); //Uhel 90 všechny
-  //armReset(); // Uhel kdy bude rameno sedět 
+  delay(500);
+  semafor("cervena");
+  startMotorForDuration(3000);
+  stopMotor();
+  delay(1000);
+  semafor("zelena");
 }
 
 void loop() {
-  delay(1000);
+  semafor("zelena");
   
   // Spustí motor a čeká pouze na aktivaci IR1
   startMotorUntilSensorPin(IR1, 400);
   stopMotor();
+  semafor("zluta");
+
 
   delay(1000);
 
   detectedColor = scanColor();
   Serial.println("Detekovaná barva: " + detectedColor);
+
+  if (detectedColor == "R") {
+    nastavRGB(maxSvit, 0, 0);
+  } else if (detectedColor == "G") {
+    nastavRGB(0, maxSvit, 0);
+  } else if (detectedColor == "B") {
+    nastavRGB(0, 0, maxSvit);
+  }
 
   delay(1000);
   
@@ -108,23 +159,31 @@ void loop() {
 
   if (detectedColor == "R") {
     Serial.println("Cervena kostka");
-    //cubeGrab();
-    //cubeRed(); // Pozice s červenou
+    enableArm();
+    cubeGrab();
+    cubeRed();
+    armReset();
   } else if (detectedColor == "G") {
     Serial.println("Zelena kostka");
-    //cubeGrab();
-    //cubeGreen(); // Pozice se zelenou
+    enableArm();
+    cubeGrab();
+    cubeGreen();
+    armReset();
   } else if (detectedColor == "B") {
     Serial.println("Modra kostka");
-    //cubeGrab();
-    //cubeBlue(); // Pozice s modrou
+    enableArm();
+    cubeGrab();
+    cubeBlue();
+    armReset();
   } else if (detectedColor == "XXX") {
     Serial.println("Neznama kostka");
     startMotorForDuration(3000); // Spuštění motoru na 3 sekundy
     Serial.println("Neznama kostka pryč");      
   }
   delay(1000);
+  nastavRGB(0, 0, 0);
   Serial.println("Cyklus dokončen");
+
 }
 
 // Funkce pro spuštění motoru **dokud nesepne kterýkoliv IR senzor**
@@ -209,13 +268,13 @@ String scanColor() {
     Serial.println(blue);
 
     // Rozhodování o barvě
-    if (red < 60) {
+    if (red < 30) {
       Serial.println("Barva červená");
       return "R";
-    } else if (green < 50) {
+    } else if (green < 30) {
       Serial.println("Barva zelená");
       return "G";
-    } else if (blue < 50) { 
+    } else if (blue < 30) { 
       Serial.println("Barva modrá");
       return "B";
     }
@@ -229,36 +288,132 @@ String scanColor() {
   return "XXX";
 }
 
-void moveArm(int a, int b, int c, int d, int e, int f) {
-  osa1.write(a);
-  osa2.write(b);
-  osa3.write(c);
-  osa4.write(d);
-  osa5.write(e);
-  osa6.write(f);
-  delay(200);
+void moveArm(int a, int b, int c, int d, int e, int f, int steps = 40) {
+  int startPos[6] = {osa1.read(), osa2.read(), osa3.read(), osa4.read(), osa5.read(), osa6.read()};
+  int endPos[6] = {a, b, c, d, e, f};
+  
+  for (int s = 0; s <= steps; s++) {
+    float t = (float)s / steps;
+    // Smoothstep easing function: cubic interpolation for ease in/out
+    float ease = t * t * (3 - 2 * t);
+    
+    osa1.write(startPos[0] + (endPos[0] - startPos[0]) * ease);
+    osa2.write(startPos[1] + (endPos[1] - startPos[1]) * ease);
+    osa3.write(startPos[2] + (endPos[2] - startPos[2]) * ease);
+    osa4.write(startPos[3] + (endPos[3] - startPos[3]) * ease);
+    osa5.write(startPos[4] + (endPos[4] - startPos[4]) * ease);
+    osa6.write(startPos[5] + (endPos[5] - startPos[5]) * ease);
+    
+    delay(20);
+  }
+}
+
+void disableArm() {
+  osa1.detach();
+  osa2.detach();
+  osa3.detach();
+  osa4.detach();
+  osa5.detach();
+  osa6.detach();
+  Serial.println("Rameno vypnuto");
+}
+
+void enableArm() {
+  // Připojení serv, ale bez pohybu
+  osa1.attach(PIN_OSA1);
+  osa1.write(85);
+  osa2.attach(PIN_OSA2);
+  osa2.write(5);
+  osa3.attach(PIN_OSA3);
+  osa3.write(70);
+  osa4.attach(PIN_OSA4);
+  osa4.write(170);
+  osa5.attach(PIN_OSA5);
+  osa5.write(60);
+  osa6.attach(PIN_OSA6);
+  osa6.write(80);
+  Serial.println("Rameno aktivováno");
 }
 
 void cubeGrab() {
-  moveArm(90, 120, 150, 90, 60, 45); //Nadefinovat pozice
+  moveArm(85, 120, 120, 100, 60, 80); //zvedne se z resetu +
+  delay(500);
+  moveArm(175, 120, 120, 100, 60, 25); // otočí se k pásu a otevřeruku *
+  delay(500); 
+  moveArm(175, 70, 87, 115, 60, 25); // nahne se k pásu -
+  delay(500);
+  moveArm(175, 70, 87, 115, 60, 57); //chycení kostky -
+  delay(500);
+  moveArm(175, 120, 120, 100, 60, 57); // oddálí se od pásu * (zavřena s kostkou)
+  delay(500);
+  moveArm( 85, 120, 120, 100, 60, 57); //otočí se zpět + (zavřena s kostkou)
+  delay(500);
+}
+
+
+void armReset() {
+  moveArm(85, 5, 70, 170, 60, 80);
+  delay(200);
+  disableArm();
 }
 
 void cubeRed() {
-  moveArm(125, 125, 135, 105, 75, 25); //Nadefinovat pozice
+  moveArm(110, 80, 80, 100, 60, 57); // nahnutí nad místo odhozu
+  delay(500);
+  moveArm(110, 80, 80, 100, 60, 25); // shození
+  delay(500);
+  moveArm(85, 120, 120, 100, 60, 80); // nahnutí zpátky
+  delay(500);
 }
 
 void cubeGreen() {
-  moveArm(155, 135, 125, 115, 85, 20); //Nadefinovat pozice
+  moveArm(85, 40, 20, 90, 60, 57); // nahnutí nad místo odhozu
+  delay(500);
+  moveArm(85, 40, 20, 90, 60, 25); // shození
+  delay(500);
+  moveArm(85, 120, 120, 100, 60, 80); // nahnutí zpátky
+  delay(500);
 }
 
 void cubeBlue() {
-  moveArm(185, 145, 115, 125, 95, 15); //Nadefinovat pozice
+  moveArm(55, 80, 80, 100, 60, 57);// nahnutí nad místo odhozu
+  delay(500);
+  moveArm(55, 80, 80, 100, 60, 25); // shození
+  delay(500);
+  moveArm(85, 120, 120, 100, 60, 80); // nahnutí zpátky
+  delay(500);
 }
 
-void armReset() {
-  moveArm(90, 90, 90, 90, 90, 90); //Nadefinovat pozice
+
+void semafor(String barva) {
+    digitalWrite(cervena_semafor, LOW);
+    digitalWrite(zluta_semafor, LOW);
+    digitalWrite(zelena_semafor, LOW);
+    
+    if (barva == "cervena") {
+        digitalWrite(cervena_semafor, HIGH);
+    } else if (barva == "zluta") {
+        digitalWrite(zluta_semafor, HIGH);
+    } else if (barva == "zelena") {
+        digitalWrite(zelena_semafor, HIGH);
+    }
 }
 
-void armSetup() {
-  moveArm(90, 90, 90, 90, 90, 90); //Nadefinovat pozice
+void nastavRGB(int cervena, int zelena, int modra) {
+  // nastavení všech barev na zvolené intenzity
+  analogWrite(pinR, cervena);
+  analogWrite(pinG, zelena);
+  analogWrite(pinB, modra);
 }
+
+void bzucakon(int frekvence, int doba, int pauza) {
+  unsigned long startTime = millis();
+  // Smyčka poběží, dokud neuplyne 10 sekund
+  while (millis() - startTime < 10000) {
+    tone(BUZZER_PIN, frekvence, doba); // Spustí tón na dobu "doba"
+    delay(doba);                      // Počká, než tón skončí
+    noTone(BUZZER_PIN);               // Vypne tón (pro jistotu)
+    delay(pauza);                     // Pauza mezi tóny
+  }
+}
+

@@ -1,41 +1,44 @@
-armReset(80, 5, 70, 60, 170, 115) // pozice dole (pak bude nadcházet "vypnutí serv")
+armReset(85, 5, 70, 170, 60, 80) // pozice dole (pak bude nadcházet "vypnutí serv")
 
+ruka 80 -> zavrene uplne
+ruka 57 -> uchopeni kostky 30x30
+ruka 25 -> otevřena
 
 cubeGrab
-(80, 120, 120, 100, 60, X) //zvedne se z resetu +
+(85, 120, 120, 100, 60, 80) //zvedne se z resetu +
 delay?
-(175, 120, 120, 100, 60, X) // otočí se k pásu a otevřeruku *
+(175, 120, 120, 100, 60, 25) // otočí se k pásu a otevřeruku *
 delay?
-(175, 80, 100, 115, 60, X) // nahne se k pásu -
+(175, 70, 87, 115, 60, 25) // nahne se k pásu -
 delay?
-(175, 80, 100, 115, 60, X) //chycení kostky -
+(175, 70, 87, 115, 60, 57) //chycení kostky -
 delay?
-(175, 120, 120, 100, 60, X) // oddálí se od pásu * (zavřená ruka!!)
+(175, 120, 120, 100, 60, 57) // oddálí se od pásu * (zavřena s kostkou)
 delay?
-( 90, 120, 120, 100, 60, X) //otočí se zpět +
+(85, 120, 120, 100, 60, 57) //otočí se zpět + (zavřena s kostkou)
 // navazují barvy
 
 RGB cube 
 R
-(120, 80, 80, 100, 60, X) // nahnutí nad místo odhozu
+(110, 80, 80, 100, 60, 57) // nahnutí nad místo odhozu
 delay??
-( x, x, x, x, x, x) // shození
+(110, 80, 80, 100, 60, 25) // shození
 delay?
-(90, 120, 120, 100, 60, X) // nahnutí zpátky
+(85, 120, 120, 100, 60, 80) // nahnutí zpátky
 navazuje na reset
 
 G
-(90, 40, 20, 90, 60, X) // nahnutí nad místo odhozu
+(85, 40, 20, 90, 60, 57) // nahnutí nad místo odhozu
 delay??
-( x, x, x, x, x, x) // shození
+(85, 40, 20, 90, 60, 25) // shození
 delay?
-(90, 120, 120, 100, 60, X) // nahnutí zpátky
+(85, 120, 120, 100, 60, 80) // nahnutí zpátky
 navazuje na reset
 
 B
-(60, 80, 80, 100, 60, 90) // nahnutí nad místo odhozu
+(55, 80, 80, 100, 60, 57) // nahnutí nad místo odhozu
 delay??
-( x, x, x, x, x, x) // shození
+(55, 80, 80, 100, 60, 25) // shození
 delay?
-(90, 120, 120, 100, 60, X) // nahnutí zpátky
+(85, 120, 120, 100, 60, 80) // nahnutí zpátky
 navazuje na reset
