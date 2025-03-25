@@ -109,21 +109,17 @@ void setup() {
   pinMode(IR1, INPUT);
   pinMode(IR2, INPUT);
 
+  semafor("cervena");
+
   // Servo inicializace
-  osa1.attach(PIN_OSA1);
-  osa2.attach(PIN_OSA2);
-  osa3.attach(PIN_OSA3);
-  osa4.attach(PIN_OSA4);
-  osa5.attach(PIN_OSA5);
-  osa6.attach(PIN_OSA6);
   delay(2000);
   enableArm();
   delay(1000);
   armReset();
 
   delay(500);
-  semafor("cervena");
-  startMotorForDuration(3000);
+
+  startMotorForDuration(3600);
   stopMotor();
   delay(1000);
   semafor("zelena");
@@ -133,7 +129,7 @@ void loop() {
   semafor("zelena");
   
   // Spustí motor a čeká pouze na aktivaci IR1
-  startMotorUntilSensorPin(IR1, 400);
+  startMotorUntilSensorPin(IR1, 550);
   stopMotor();
   semafor("zluta");
 
@@ -268,13 +264,13 @@ String scanColor() {
     Serial.println(blue);
 
     // Rozhodování o barvě
-    if (red < 30) {
+    if (red < 50) {
       Serial.println("Barva červená");
       return "R";
-    } else if (green < 30) {
+    } else if (green < 50) {
       Serial.println("Barva zelená");
       return "G";
-    } else if (blue < 30) { 
+    } else if (blue < 50) { 
       Serial.println("Barva modrá");
       return "B";
     }
