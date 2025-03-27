@@ -46,8 +46,6 @@ const int maxSvit = 50;
 #define zelena_semafor 11 //fialová
 int pauza = 1000; //nastavíme si jak dlouhou chceme pauzu
 
-//bzucak
-#define BUZZER_PIN 40
 
 
 // Nastavení globální proměnné pro barvu
@@ -82,10 +80,6 @@ void setup() {
   pinMode(pinR, OUTPUT);
   pinMode(pinG, OUTPUT);
   pinMode(pinB, OUTPUT);
-
-  //bzucak
-  pinMode(BUZZER_PIN, OUTPUT);
-  digitalWrite(BUZZER_PIN, HIGH); // Bzučák vypnutý po startu
 
   // Krokový motor
   pinMode(stepPin, OUTPUT);
@@ -150,7 +144,7 @@ void loop() {
   delay(1000);
   
   // Opět spustí motor a čeká na aktivaci IR1
-  startMotorUntilSensorPin(IR2, 1000);
+  startMotorUntilSensorPin(IR2, 900);
   stopMotor();
 
   if (detectedColor == "R") {
@@ -173,8 +167,10 @@ void loop() {
     armReset();
   } else if (detectedColor == "XXX") {
     Serial.println("Neznama kostka");
-    startMotorForDuration(3000); // Spuštění motoru na 3 sekundy
-    Serial.println("Neznama kostka pryč");      
+    enableArm();
+    cubeGrab();
+    cubeUknown();
+    armReset();
   }
   delay(1000);
   nastavRGB(0, 0, 0);
@@ -336,13 +332,11 @@ void cubeGrab() {
   delay(500);
   moveArm(175, 120, 120, 100, 60, 25); // otočí se k pásu a otevřeruku *
   delay(500); 
-  moveArm(175, 70, 87, 115, 60, 25); // nahne se k pásu -
+  moveArm(175, 60, 85, 130, 55, 25); // nahne se k pásu -
   delay(500);
-  moveArm(175, 70, 87, 115, 60, 57); //chycení kostky -
+  moveArm(175, 60, 85, 130, 55, 57); //chycení kostky -
   delay(500);
   moveArm(175, 120, 120, 100, 60, 57); // oddálí se od pásu * (zavřena s kostkou)
-  delay(500);
-  moveArm( 85, 120, 120, 100, 60, 57); //otočí se zpět + (zavřena s kostkou)
   delay(500);
 }
 
@@ -354,6 +348,8 @@ void armReset() {
 }
 
 void cubeRed() {
+  moveArm( 85, 120, 120, 100, 60, 57); //otočí se zpět + (zavřena s kostkou)
+  delay(500);
   moveArm(110, 80, 80, 100, 60, 57); // nahnutí nad místo odhozu
   delay(500);
   moveArm(110, 80, 80, 100, 60, 25); // shození
@@ -363,6 +359,8 @@ void cubeRed() {
 }
 
 void cubeGreen() {
+  moveArm( 85, 120, 120, 100, 60, 57); //otočí se zpět + (zavřena s kostkou)
+  delay(500);
   moveArm(85, 40, 20, 90, 60, 57); // nahnutí nad místo odhozu
   delay(500);
   moveArm(85, 40, 20, 90, 60, 25); // shození
@@ -372,9 +370,20 @@ void cubeGreen() {
 }
 
 void cubeBlue() {
+  moveArm( 85, 120, 120, 100, 60, 57); //otočí se zpět + (zavřena s kostkou)
+  delay(500);
   moveArm(55, 80, 80, 100, 60, 57);// nahnutí nad místo odhozu
   delay(500);
   moveArm(55, 80, 80, 100, 60, 25); // shození
+  delay(500);
+  moveArm(85, 120, 120, 100, 60, 80); // nahnutí zpátky
+  delay(500);
+}
+
+void cubeUknown() {
+  moveArm(175, 140, 130, 90, 60, 57); // nahnutí nad míst odhozu
+  delay(500);
+  moveArm(175, 140, 130, 90, 60, 25); // shození
   delay(500);
   moveArm(85, 120, 120, 100, 60, 80); // nahnutí zpátky
   delay(500);
@@ -402,14 +411,4 @@ void nastavRGB(int cervena, int zelena, int modra) {
   analogWrite(pinB, modra);
 }
 
-void bzucakon(int frekvence, int doba, int pauza) {
-  unsigned long startTime = millis();
-  // Smyčka poběží, dokud neuplyne 10 sekund
-  while (millis() - startTime < 10000) {
-    tone(BUZZER_PIN, frekvence, doba); // Spustí tón na dobu "doba"
-    delay(doba);                      // Počká, než tón skončí
-    noTone(BUZZER_PIN);               // Vypne tón (pro jistotu)
-    delay(pauza);                     // Pauza mezi tóny
-  }
-}
 
