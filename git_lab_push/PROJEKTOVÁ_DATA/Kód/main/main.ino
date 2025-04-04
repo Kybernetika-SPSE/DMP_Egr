@@ -103,10 +103,10 @@ void setup() {
   pinMode(IR1, INPUT);
   pinMode(IR2, INPUT);
 
-  semafor("cervena"); //nastaví semafor na červenou
+  semafor("cervena");
 
   // Servo inicializace
-  delay(1000);
+  delay(2000);
   enableArm();
   delay(1000);
   armReset();
