@@ -1,16 +1,18 @@
-# DMP_Egr
+# Stanice pro monitorování okolního prostředí
 
-### Materials
-+ [Reports](./Reports)
+## Zadání
+Cílem práce je navrhnout a vytvořit model pásové linky, která bude využívat robotickou ruku na manipulaci se zásilkami.
 
-+ [3D_Models](./MP_modely)
+## Vedoucí práce
+Jiří Švihla
 
-+ [Schematics](./Reports/Report_october/schematics)
+## Harmonogram práce
+- [x]   Návrh celého modelu a výběr potřebných součástek (31.10.)
+- [x]   Návrh a vytvoření jednotlivých pásů (28.11.)
+- [x]   Seznámení se s fungování robotického ramena (19.12.)
+- [x]   Vývoj softwaru pro řízení celého modelu (30.1.)
+- [x]   Kompletování modelu a následné testovaní (27.2.)
+- [x]   Zpracování dokumentace (24. 3.)
 
-+ [Code](./Code)
-
-### Latest report
-
-+ [February report](./Reports/February_report/February_report.pdf)
-
-
+## Termín odevzdání
+31. března 2025
